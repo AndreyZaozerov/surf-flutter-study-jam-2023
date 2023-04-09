@@ -1,24 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:hive_flutter/adapters.dart';
 import 'package:surf_flutter_study_jam_2023/features/ticket_storage/input_form.dart';
+import 'package:surf_flutter_study_jam_2023/features/ticket_storage/ticket_card.dart';
+import 'package:surf_flutter_study_jam_2023/main.dart';
 
-
-final _formKey = GlobalKey<FormState>();
+import '../model/ticket.dart';
 
 /// Экран “Хранения билетов”.
 class TicketStoragePage extends StatelessWidget {
   const TicketStoragePage({Key? key}) : super(key: key);
-
-  Widget clearBody(){
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: const [
-          Text('Здесь пока ни чего нет'),
-        ],
-      ),
-    );
-  }
-
 
   Widget addBtn(BuildContext context){
     return SizedBox(
@@ -44,82 +34,37 @@ class TicketStoragePage extends StatelessWidget {
     return showModalBottomSheet(
         isScrollControlled: true,
         context: context,
+        isDismissible: true,
+        enableDrag: true,
         builder: (BuildContext context){
           return Padding(
             padding: EdgeInsets.only(
                 bottom: MediaQuery.of(context).viewInsets.bottom),
-            child: const SizedBox(
-              height: 250,
-              child: Padding(
-                padding: EdgeInsets.symmetric(vertical: 40.0, horizontal: 20.0),
-                child: InputForm(),
-              ),
-            ),
+            child: const InputForm(),
           );
         }
     );
   }
-  // Future addBottomSheet(BuildContext context){
-  //   return showModalBottomSheet(
-  //       isScrollControlled: true,
-  //       context: context,
-  //       builder: (BuildContext context){
-  //         return Padding(
-  //           padding: EdgeInsets.only(
-  //               bottom: MediaQuery.of(context).viewInsets.bottom),
-  //           child: SizedBox(
-  //             height: 230,
-  //             child: Padding(
-  //               padding: const EdgeInsets.symmetric(vertical: 40.0, horizontal: 20.0),
-  //               child: Form(
-  //                 key: _formKey,
-  //                 child: Column(
-  //                   children: [
-  //                     Column(
-  //                       children: [
-  //                         TextFormField(
-  //                           decoration: const InputDecoration(
-  //                             border: OutlineInputBorder(
-  //                                 borderRadius: BorderRadius.all(Radius.circular(10.0))
-  //                             ),
-  //                             labelText: 'Введите url',
-  //                           ),
-  //                           onSaved: (String? value) {
-  //
-  //                           },
-  //                           validator: (String? value) {
-  //                             if (value == null || value.isEmpty) {
-  //                               return 'Введите корректный URL';
-  //                             }
-  //                             return null;
-  //                           },
-  //                         ),
-  //                         const SizedBox(height: 20.0),
-  //                         ElevatedButton(
-  //                           onPressed: () {
-  //                             if (_formKey.currentState!.validate()) {
-  //                               ScaffoldMessenger.of(context).showSnackBar(
-  //                                   const SnackBar(content: Text('Processing Data'))
-  //                               );
-  //                             }
-  //                           },
-  //                           style: ElevatedButton.styleFrom(
-  //                               backgroundColor: Colors.black12,
-  //                               foregroundColor: Colors.white
-  //                           ),
-  //                           child: const Text('Добавить'),
-  //                         )
-  //                       ],
-  //                     ),
-  //                   ],
-  //                 ),
-  //               ),
-  //             ),
-  //           ),
-  //         );
-  //       }
-  //   );
-  // }
+
+   Widget getHiveList(){
+    return ValueListenableBuilder(
+        valueListenable: Hive.box<Ticket>(ticketBoxName).listenable(),
+        builder: (context, Box<Ticket> box, _) {
+          if (box.values.isEmpty) {
+            return const Center(
+              child: Text('Здесь пока ни чего нет'),
+            );
+          }
+          return ListView.builder(
+              itemCount: box.length,
+              itemBuilder: (context, index) {
+                Ticket? t = box.getAt(index);
+                return TicketCard(ticket: t!, index: index);
+              }
+          );
+        }
+    );
+   }
 
 
   @override
@@ -129,7 +74,7 @@ class TicketStoragePage extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Хранение билетов'),
       ),
-      body: clearBody(),
+      body: getHiveList(), //ticketsData.isEmpty ? clearBody() : ticketList(),
       floatingActionButton: Row(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
@@ -143,3 +88,5 @@ class TicketStoragePage extends StatelessWidget {
     );
   }
 }
+
+

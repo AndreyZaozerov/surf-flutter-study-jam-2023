@@ -1,7 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:surf_flutter_study_jam_2023/features/ticket_storage/ticket_storage_page.dart';
 
-void main() {
+import 'features/model/ticket.dart';
+
+const String ticketBoxName = "tickets4";
+
+void main() async {
+
+  await Hive.initFlutter();
+  Hive.registerAdapter(TicketAdapter());
+  await Hive.openBox<Ticket>(ticketBoxName);
   runApp(const MyApp());
 }
 
@@ -20,3 +29,4 @@ class MyApp extends StatelessWidget {
     );
   }
 }
+
